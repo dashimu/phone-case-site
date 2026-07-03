@@ -10,13 +10,15 @@ const ProductGrid = ({
   initialPageInfo,
   sortKey,
   reverse,
-  searchValue
+  searchValue,
+  collectionHandle,
 }: {
   initialProducts: Product[];
   initialPageInfo: PageInfo;
   sortKey: string;
   reverse: boolean;
   searchValue: string | null;
+  collectionHandle: string;
 }) => {
   const { currencySymbol } = config.shopify;
   const [products, setProducts] = useState(initialProducts);
@@ -33,12 +35,12 @@ const ProductGrid = ({
   };
 
   const loadMoreProducts = async () => {
-    if (loading || !pageInfo.hasNextPage) return;
+    if (loading || !pageInfo?.hasNextPage) return;
 
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/products.json?cursor=${pageInfo.endCursor || ""}&sortKey=${currentSortKey}&reverse=${currentReverse}`
+        `/api/products.json?cursor=${pageInfo.endCursor || ""}&sortKey=${currentSortKey}&reverse=${currentReverse}&collection=${encodeURIComponent(collectionHandle)}`
       );
       if (!response.ok) throw new Error("Failed to fetch");
       const { products: newProducts, pageInfo: newPageInfo } = await response.json();

@@ -1,58 +1,119 @@
 ---
 import FeaturedProducts from "@/components/FeaturedProducts.astro";
-import config from "@/config/config.json";
-import CollectionsSlider from "@/functional-components/CollectionsSlider";
 import Base from "@/layouts/Base.astro";
-import { getCollectionProducts, getCollections } from "@/lib/shopify";
-import CallToAction from "@/partials/CallToAction.astro";
-import HeroSlider from "src/layouts/functional-components/HeroSlider";
+import { getCollectionProducts } from "@/lib/shopify";
+import {
+  getCurrentCollectionHandle,
+  siteDescription,
+  siteName,
+  siteTagline,
+} from "@/lib/site";
 
-const { collections } = config.shopify;
-
-// Fetch slider images for the HeroSlider
-const sliderImages = await getCollectionProducts({
-  collection: collections.hero_slider,
-});
-const heroProducts = sliderImages.products;
-
-const collectionProducts = await getCollections();
-
-// Fetch featured products
+const collectionHandle = getCurrentCollectionHandle();
 const { products: featuredProducts } = await getCollectionProducts({
-  collection: collections.featured_products,
+  collection: collectionHandle,
   reverse: false,
 });
+
+const benefits = [
+  "Slim fit design",
+  "Shockproof protection",
+  "Comfortable grip",
+  "Stylish look",
+  "Precise cutouts",
+  "Lightweight feel",
+  "Daily protection",
+  "Multiple colors or styles",
+];
 ---
 
-<Base>
-  <section>
+<Base title={siteName} description={siteDescription}>
+  <section class="section-sm">
     <div class="container">
-      <div class="bg-gradient py-10 rounded-md">
-        <HeroSlider products={heroProducts} client:load />
+      <div class="row items-center gy-5">
+        <div class="lg:col-6">
+          <p class="mb-3 font-medium text-primary">Phone Case Store</p>
+          <h1 class="mb-5">Stylish Protection for Your Phone</h1>
+          <p class="mb-8 text-lg text-text-light dark:text-darkmode-text-light">
+            Slim, protective phone cases designed for daily use, comfortable
+            grip, and a clean modern look.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a class="btn btn-primary" href="/products">Shop Phone Cases</a>
+            <a class="btn btn-outline-primary" href="/products"
+              >View Collection</a
+            >
+          </div>
+        </div>
+        <div class="lg:col-6">
+          <img
+            src="/images/banner.png"
+            width="640"
+            height="480"
+            alt="Protective phone case"
+            class="mx-auto rounded-md"
+          />
+        </div>
       </div>
     </div>
   </section>
 
-  {/* category section */}
-  <section class="section">
+  <section class="section-sm">
     <div class="container">
       <div class="text-center mb-6 md:mb-14">
-        <h2>Collections</h2>
-      </div>
-      <CollectionsSlider client:load collections={collectionProducts} />
-    </div>
-  </section>
-
-  {/* Featured Products section */}
-  <section>
-    <div class="container">
-      <div class="text-center mb-6 md:mb-14">
-        <h2 class="mb-2">Featured Products</h2>
-        <p class="md:h5">Explore Today's Featured Picks!</p>
+        <h2 class="mb-2">Featured Phone Cases</h2>
+        <p class="md:h5">{siteTagline}</p>
       </div>
       <FeaturedProducts products={featuredProducts} />
     </div>
   </section>
 
-  <CallToAction />
+  <section class="section-sm bg-light dark:bg-darkmode-light">
+    <div class="container">
+      <div class="text-center mb-8 md:mb-12">
+        <h2 class="mb-2">Why Choose Our Phone Cases</h2>
+        <p class="text-text-light dark:text-darkmode-text-light">
+          Everyday protection with a slim feel, comfortable grip, and clean
+          modern style.
+        </p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {
+          benefits.map((benefit) => (
+            <div class="rounded-md border border-border dark:border-darkmode-border bg-body dark:bg-darkmode-body p-5 text-center">
+              <h3 class="h5">{benefit}</h3>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section-sm">
+    <div class="container">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <h2 class="h4 mb-3">Slim and Protective</h2>
+          <p class="text-text-light dark:text-darkmode-text-light">
+            Lightweight designs help protect your phone without making it feel
+            bulky.
+          </p>
+        </div>
+        <div>
+          <h2 class="h4 mb-3">Everyday Comfort</h2>
+          <p class="text-text-light dark:text-darkmode-text-light">
+            Comfortable grip and precise cutouts make daily use simple and
+            familiar.
+          </p>
+        </div>
+        <div>
+          <h2 class="h4 mb-3">Clean Modern Style</h2>
+          <p class="text-text-light dark:text-darkmode-text-light">
+            Choose a case that looks good, feels good, and protects your phone
+            through everyday routines.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
 </Base>

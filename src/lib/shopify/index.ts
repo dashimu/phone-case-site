@@ -75,6 +75,7 @@ const privateAccessToken = import.meta.env
 const legacyAccessToken = import.meta.env
   .PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 const key = privateAccessToken || legacyAccessToken || "";
+const hasShopifyConfig = Boolean(domain && key);
 
 type ExtractVariables<T> = T extends { variables: object }
   ? T["variables"]
@@ -91,6 +92,12 @@ export async function shopifyFetch<T>({
   tags?: string[];
   variables?: ExtractVariables<T>;
 }): Promise<{ status: number; body: T } | never> {
+  if (!hasShopifyConfig) {
+    throw new Error(
+      "Missing Shopify environment variables. Set PUBLIC_SHOPIFY_STORE_DOMAIN and PUBLIC_SHOPIFY_STOREFRONT_PRIVATE_ACCESS_TOKEN.",
+    );
+  }
+
   try {
     // Determine which header to use based on token type
     // Private Access Token (new): Shopify-Storefront-Private-Token
@@ -320,6 +327,10 @@ export async function getCart(cartId: string): Promise<Cart | undefined> {
 export async function getCollection(
   handle: string,
 ): Promise<Collection | undefined> {
+  if (!hasShopifyConfig) {
+    return undefined;
+  }
+
   const res = await shopifyFetch<ShopifyCollectionOperation>({
     query: getCollectionQuery,
     tags: [TAGS.collections],
@@ -335,13 +346,19 @@ export async function getCollectionProducts({
   collection,
   reverse,
   sortKey,
+  cursor,
   filterCategoryProduct,
 }: {
   collection: string;
   reverse?: boolean;
   sortKey?: string;
+  cursor?: string;
   filterCategoryProduct?: any[]; // Update the type based on your GraphQL schema
 }): Promise<{ pageInfo: PageInfo | null; products: Product[] }> {
+  if (!hasShopifyConfig) {
+    return { pageInfo: null, products: [] };
+  }
+
   const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
     query: getCollectionProductsQuery,
     tags: [TAGS.collections, TAGS.products],
@@ -349,11 +366,13 @@ export async function getCollectionProducts({
       handle: collection,
       reverse,
       sortKey: sortKey === "CREATED_AT" ? "CREATED" : sortKey,
+      cursor,
       filterCategoryProduct,
     } as {
       handle: string;
       reverse?: boolean;
       sortKey?: string;
+      cursor?: string;
       filterCategoryProduct?: any[];
     },
   });
@@ -366,7 +385,9 @@ export async function getCollectionProducts({
   const pageInfo = res.body.data?.collection?.products?.pageInfo;
 
   return {
-    pageInfo,
+    pageInfo: pageInfo
+      ? { ...pageInfo, hasNextPage: false }
+      : { hasNextPage: false, hasPreviousPage: false, endCursor: "" },
     products: reshapeProducts(
       removeEdgesAndNodes(res.body.data.collection.products),
     ),
@@ -420,6 +441,10 @@ export async function getUserDetails(accessToken: string): Promise<user> {
 }
 
 export async function getCollections(): Promise<Collection[]> {
+  if (!hasShopifyConfig) {
+    return [];
+  }
+
   const res = await shopifyFetch<ShopifyCollectionsOperation>({
     query: getCollectionsQuery,
     tags: [TAGS.collections],
@@ -472,6 +497,10 @@ export async function getPages(): Promise<Page[]> {
 }
 
 export async function getProduct(handle: string): Promise<Product | undefined> {
+  if (!hasShopifyConfig) {
+    return undefined;
+  }
+
   const res = await shopifyFetch<ShopifyProductOperation>({
     query: getProductQuery,
     tags: [TAGS.products],
@@ -486,6 +515,10 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
 export async function getProductRecommendations(
   productId: string,
 ): Promise<Product[]> {
+  if (!hasShopifyConfig) {
+    return [];
+  }
+
   const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
     query: getProductRecommendationsQuery,
     tags: [TAGS.products],
@@ -506,6 +539,10 @@ export async function getVendors({
   reverse?: boolean;
   sortKey?: string;
 }): Promise<{ vendor: string; productCount: number }[]> {
+  if (!hasShopifyConfig) {
+    return [];
+  }
+
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getVendorsQuery,
     tags: [TAGS.products],
@@ -576,6 +613,13 @@ export async function getProducts({
   sortKey?: string;
   cursor?: string;
 }): Promise<{ pageInfo: PageInfo; products: Product[] }> {
+  if (!hasShopifyConfig) {
+    return {
+      pageInfo: { hasNextPage: false, hasPreviousPage: false, endCursor: "" },
+      products: [],
+    };
+  }
+
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,
     tags: [TAGS.products],
@@ -599,6 +643,10 @@ export async function getHighestProductPrice(): Promise<{
   amount: string;
   currencyCode: string;
 } | null> {
+  if (!hasShopifyConfig) {
+    return null;
+  }
+
   try {
     const res = await shopifyFetch<any>({
       query: getHighestProductPriceQuery,

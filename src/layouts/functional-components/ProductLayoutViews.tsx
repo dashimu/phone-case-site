@@ -13,12 +13,14 @@ const ProductLayoutViews = ({
   sortKey,
   reverse,
   searchValue,
+  collectionHandle,
 }: {
   initialProducts: Product[];
   initialPageInfo: PageInfo;
   sortKey: string;
   reverse: boolean;
   searchValue: string | null;
+  collectionHandle: string;
 }) => {
   const layout = useStore(layoutView);
 
@@ -32,6 +34,7 @@ const ProductLayoutViews = ({
             sortKey={sortKey}
             reverse={reverse}
             searchValue={searchValue}
+            collectionHandle={collectionHandle}
           />
         ) : (
           <ProductGrid
@@ -40,6 +43,7 @@ const ProductLayoutViews = ({
             sortKey={sortKey}
             reverse={reverse}
             searchValue={searchValue}
+            collectionHandle={collectionHandle}
           />
         )}
       </Suspense>

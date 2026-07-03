@@ -1,14 +1,17 @@
 import type { APIRoute } from "astro";
-import { getProducts } from "@/lib/shopify";
+import { getCollectionProducts } from "@/lib/shopify";
+import { getCurrentCollectionHandle } from "@/lib/site";
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const cursor = url.searchParams.get("cursor");
   const sortKey = url.searchParams.get("sortKey") as string;
   const reverse = url.searchParams.get("reverse") === "true";
+  const collection = url.searchParams.get("collection") || getCurrentCollectionHandle();
 
   try {
-    const { products, pageInfo } = await getProducts({
+    const { products, pageInfo } = await getCollectionProducts({
+      collection,
       sortKey,
       reverse,
       cursor: cursor || undefined,

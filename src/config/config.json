@@ -1,7 +1,7 @@
 {
   "site": {
-    "title": "Storeplate",
-    "base_url": "https://storeplate.vercel.app/",
+    "title": "Phone Case Store",
+    "base_url": "https://phone-case-site.pages.dev/",
     "base_path": "/",
     "trailing_slash": false,
     "favicon": "/images/favicon.png",
@@ -9,18 +9,18 @@
     "logo_darkmode": "/images/logo-darkmode.png",
     "logo_width": "150",
     "logo_height": "33",
-    "logo_text": "Storeplate"
+    "logo_text": "Phone Case Store"
   },
 
   "announcement": {
     "enable": true,
-    "content": "<span class='text-center block'>♥️ Loving Storeplate? <a class='underline' href='https://github.com/zeon-studio/storeplate' target='_blank' rel='noopener'>Please ⭐️ on Github</a></span>",
+    "content": "<span class='text-center block'>Slim, shockproof phone cases for everyday protection.</span>",
     "expire_days": 7
   },
 
   "settings": {
     "search": true,
-    "account": true,
+    "account": false,
     "sticky_header": true,
     "theme_switcher": true,
     "default_theme": "system"
@@ -28,13 +28,13 @@
 
   "params": {
     "contact_form_action": "#",
-    "copyright": "Designed And Developed by [Zeon Studio](https://zeon.studio)"
+    "copyright": "© Phone Case Store. All rights reserved."
   },
 
   "navigation_button": {
     "enable": true,
-    "label": "Get Started",
-    "link": "https://github.com/zeon-studio/storeplate"
+    "label": "Shop Now",
+    "link": "/products"
   },
 
   "google_tag_manager": {
@@ -43,9 +43,9 @@
   },
 
   "metadata": {
-    "meta_author": "zeon.studio",
+    "meta_author": "Phone Case Store",
     "meta_image": "/images/og-image.png",
-    "meta_description": "Shopify Storefront Boilerplate"
+    "meta_description": "Stylish and protective phone cases for daily use."
   },
 
   "shopify": {
@@ -53,7 +53,7 @@
     "currencyCode": "USD",
     "collections": {
       "hero_slider": "hidden-homepage-carousel",
-      "featured_products": "featured-products"
+      "featured_products": "phone-case"
     }
   }
 }

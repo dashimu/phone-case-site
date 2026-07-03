@@ -1,12 +1,11 @@
 ---
 enable: true
-title: "Curved Collection for Your
-Bedroom Get 25% Off"
-sub_title: "Deal of the Week"
+title: "Style and Protection for Every Day"
+sub_title: "Phone Cases Made for Daily Use"
 image: "/images/call-to-action.png"
-description: "Subscribe our Newsletter and get all latest information and offers"
+description: "Shop slim, shockproof phone cases with a comfortable grip and clean modern look."
 button:
   enable: true
-  label: "Shop Now"
+  label: "Shop Phone Cases"
   link: "/products"
 ---

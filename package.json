@@ -1,8 +1,8 @@
 {
-  "name": "storeplate",
+  "name": "phone-case-site",
   "version": "3.0.0",
   "description": "Astro and Shopify Storefront API boilerplate",
-  "author": "zeon.studio",
+  "author": "dashimu",
   "license": "MIT",
   "packageManager": "pnpm@11.8.0",
   "type": "module",

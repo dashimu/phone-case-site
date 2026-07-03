@@ -52,6 +52,7 @@ export const getCollectionProductsQuery = /* GraphQL */ `
     $handle: String!
     $sortKey: ProductCollectionSortKeys
     $reverse: Boolean
+    $cursor: String
     $filterCategoryProduct: [ProductFilter!]
   ) {
     collection(handle: $handle) {
@@ -59,8 +60,14 @@ export const getCollectionProductsQuery = /* GraphQL */ `
         sortKey: $sortKey
         reverse: $reverse
         first: 100
+        after: $cursor
         filters: $filterCategoryProduct
       ) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          endCursor
+        }
         edges {
           node {
             ...product

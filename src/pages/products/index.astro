@@ -8,10 +8,10 @@ import {
   getCollectionProducts,
   getCollections,
   getHighestProductPrice,
-  getProducts,
   getVendors,
 } from "@/lib/shopify";
 import type { PageInfo, Product } from "@/lib/shopify/types";
+import { getCurrentCollectionHandle, siteDescription } from "@/lib/site";
 import CallToAction from "@/partials/CallToAction.astro";
 
 const searchParams = Astro.url.searchParams;
@@ -28,101 +28,81 @@ const cursor = searchParamsObject.cursor || null;
 
 const { sortKey, reverse } =
   sorting.find((item) => item.slug === sort) || defaultSort;
+const collectionHandle = getCurrentCollectionHandle();
 
 let productsData: any;
 let vendorsWithCounts: { vendor: string; productCount: number }[] = [];
 let categoriesWithCounts: { category: string; productCount: number }[] = [];
 
-if (searchValue || brand || minPrice || maxPrice || category || tag) {
-  let queryString = "";
-
-  if (minPrice || maxPrice) {
-    queryString += `variants.price:<=${maxPrice} variants.price:>=${minPrice}`;
-  }
-
-  if (searchValue) {
-    queryString += ` ${searchValue}`;
-  }
-
-  if (brand) {
-    Array.isArray(brand)
-      ? (queryString += `${brand.map((b) => `(vendor:${b})`).join(" OR ")}`)
-      : (queryString += `vendor:"${brand}"`);
-  }
-
-  if (tag) {
-    queryString += ` ${tag}`;
-  }
-
-  const query = {
+try {
+  productsData = await getCollectionProducts({
+    collection:
+      category && category !== "all" ? category : collectionHandle,
     sortKey,
     reverse,
-    query: queryString,
     cursor: cursor || undefined,
-  };
-
-  try {
-    productsData =
-      category && category !== "all"
-        ? await getCollectionProducts({
-            collection: category,
-            sortKey,
-            reverse,
-          })
-        : await getProducts(query);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    productsData = { products: [] };
-  }
-
-  const uniqueVendors: string[] = [
-    ...new Set(
-      ((productsData?.products as Product[]) || []).map((product: Product) =>
-        String(product?.vendor || "")
-      )
-    ),
-  ];
-
-  const uniqueCategories: string[] = [
-    ...new Set(
-      ((productsData?.products as Product[]) || []).flatMap(
-        (product: Product) =>
-          product.collections.nodes.map(
-            (collectionNode: any) => collectionNode.title || ""
-          )
-      )
-    ),
-  ];
-
-  vendorsWithCounts = uniqueVendors.map((vendor: string) => {
-    const productCount = (productsData?.products || []).filter(
-      (product: Product) => product?.vendor === vendor
-    ).length;
-    return { vendor, productCount };
   });
-
-  categoriesWithCounts = uniqueCategories.map((category: string) => {
-    const productCount = ((productsData?.products as Product[]) || []).filter(
-      (product: Product) =>
-        product.collections.nodes.some(
-          (collectionNode: any) => collectionNode.title === category
-        )
-    ).length;
-    return { category, productCount };
-  });
-} else {
-  // Fetch all products
-  try {
-    productsData = await getProducts({
-      sortKey,
-      reverse,
-      cursor: cursor || undefined,
-    });
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    productsData = { products: [] };
-  }
+} catch (error) {
+  console.error("Error fetching collection products:", error);
+  productsData = { pageInfo: null, products: [] };
 }
+
+productsData.products = ((productsData?.products as Product[]) || []).filter(
+  (product: Product) => {
+    const price = Number(product.priceRange?.minVariantPrice?.amount || 0);
+    const matchesSearch = searchValue
+      ? product.title.toLowerCase().includes(searchValue.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchValue.toLowerCase())
+      : true;
+    const matchesBrand = brand ? product.vendor === brand : true;
+    const matchesMinPrice = minPrice ? price >= Number(minPrice) : true;
+    const matchesMaxPrice = maxPrice ? price <= Number(maxPrice) : true;
+    const matchesTag = tag ? product.tags.includes(tag) : true;
+
+    return (
+      matchesSearch &&
+      matchesBrand &&
+      matchesMinPrice &&
+      matchesMaxPrice &&
+      matchesTag
+    );
+  },
+);
+
+const uniqueVendors: string[] = [
+  ...new Set(
+    ((productsData?.products as Product[]) || []).map((product: Product) =>
+      String(product?.vendor || ""),
+    ),
+  ),
+].filter(Boolean);
+
+const uniqueCategories: string[] = [
+  ...new Set(
+    ((productsData?.products as Product[]) || []).flatMap((product: Product) =>
+      product.collections.nodes.map(
+        (collectionNode: any) => collectionNode.title || "",
+      ),
+    ),
+  ),
+].filter(Boolean);
+
+vendorsWithCounts = uniqueVendors.map((vendor: string) => {
+  const productCount = (productsData?.products || []).filter(
+    (product: Product) => product?.vendor === vendor,
+  ).length;
+  return { vendor, productCount };
+});
+
+categoriesWithCounts = uniqueCategories.map((category: string) => {
+  const productCount = ((productsData?.products as Product[]) || []).filter(
+    (product: Product) =>
+      product.collections.nodes.some(
+        (collectionNode: any) => collectionNode.title === category,
+      ),
+  ).length;
+  return { category, productCount };
+});
 
 const categories = await getCollections();
 const vendors = await getVendors({});
@@ -141,7 +121,7 @@ const initialProducts = productsData.products;
 const initialPageInfo = productsData.pageInfo;
 ---
 
-<Base title="Products">
+<Base title="Products" description={siteDescription}>
   <ProductLayouts
     categories={categories}
     vendors={vendors}
@@ -172,6 +152,7 @@ const initialPageInfo = productsData.pageInfo;
         sortKey={sortKey}
         reverse={reverse}
         searchValue={searchValue}
+        collectionHandle={collectionHandle}
         client:only="react"
       />
       <CallToAction />
